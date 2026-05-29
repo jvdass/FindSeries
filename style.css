@@ -337,3 +337,45 @@ footer p a {
 .fade-in-card {
     animation: fadeInCard 0.4s ease-out forwards;
 }
+
+/* --- RESPONSIVE MOBILE --- */
+@media (max-width: 768px) {
+    
+    
+    header, .header-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 15px; 
+        padding: 20px 10px;
+    }
+
+    
+    .categories-container {
+        display: flex;
+        flex-wrap: wrap; 
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+    }
+
+
+    .search-container {
+        display: flex;
+        width: 90%;
+        max-width: 400px;
+        gap: 10px;
+    }
+
+
+    .search-container input {
+        flex: 1; 
+        width: 100%;
+    }
+
+    
+    .favorites-btn, #favoris {
+        position: static; 
+        margin-top: 10px;
+    }
+}

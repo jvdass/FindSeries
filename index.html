@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FindSeries</title>
+    <link rel="stylesheet" href="style.css">
+
+
+</head>
+<body>
+
+    <h1>FindSeries</h1>
+
+    <div class="genre-filters">
+        <button class="btn-genre active" data-genre="all">Tous</button>
+        <button class="btn-genre" data-genre="Action">Action</button>
+        <button class="btn-genre" data-genre="Comedy">Comédie</button>
+        <button class="btn-genre" data-genre="Drama">Drame</button>
+        <button class="btn-genre" data-genre="Science-Fiction">Sci-Fi</button>
+    </div>
+    
+    <form id="search-form" style="margin-bottom: 30px;">
+        <div class="search-container">
+            <input type="text" id="search-input"  autocomplete="off" required>
+            <div id="suggestions-list"></div>
+        </div>
+        <button type="submit" class="btn-search">Rechercher</button>
+    </form>  <br> <br> 
+
+    <button id="btn-show-favorites" class="btn-search" style="background-color: transparent; border: none;">
+        ⭐ Mes Favoris
+    </button>
+
+    <p class="tagline">Trouvez vos séries préférées et découvrez où les regarder.</p>
+
+
+    <div id="status-message"></div>
+    <div id="movies-container"></div>
+
+    <div id="movie-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <div id="modal-body-content">
+            </div>
+    </div>
+    </div>
+
+    <script src="app.js"></script>
+
+    <hr> 
+
+    <footer>
+        © 2026 FindSeries. Tous droits réservés
+        <p>Developpé par <a href="https://github.com/jvdass" target="_blank">Jovial Dassanou</a></p>
+    </footer>
+</body>
+</html>

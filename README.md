@@ -11,7 +11,7 @@ A clean and minimalist web application that allows users to search for their fav
 - **Genre Filtering:** Easily filter through categories like Action, Comedy, Drama, and Sci-Fi.
 - **Favorites System:** Users can save their favorite series to a personal list, which persists even after refreshing the page.
 - **Dynamic Content:** Fetches accurate and updated show details (titles, release years, and cover images).
-- **✨ Where to Watch (France):** Integrated with the TMDB API to display the real-time availability of streaming platforms (Netflix, Disney+, Prime Video, Crunchyroll, etc.) specifically for the French audience.
+- **Where to Watch (France):** Integrated with the TMDB API to display the real-time availability of streaming platforms (Netflix, Disney+, Prime Video, Crunchyroll, etc.) specifically for the French audience.
 - **Responsive & Modern Design:** A clean, minimalist interface with a dark layout designed for an optimal user experience across all devices.
 
 
@@ -55,7 +55,6 @@ This project can be run entirely in your local environment.
     Open config. js and add your TMDB Read Access Token inside :
    ``` bash
    const MY_SECRET_TOKEN = "YOUR_TMDB_TOKEN_HERE";
-   
-   (Note: The config.js file is already listed in .gitignore, so your private token will never be pushed to GitHub).
+(Note: The config.js file is already listed in .gitignore, so your private token will never be pushed to GitHub).
 
 4. **Launch the application**    

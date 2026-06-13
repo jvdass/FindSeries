@@ -55,6 +55,7 @@ This project can be run entirely in your local environment.
     Open config. js and add your TMDB Read Access Token inside :
    ``` bash
    const MY_SECRET_TOKEN = "YOUR_TMDB_TOKEN_HERE";
+   
    (Note: The config.js file is already listed in .gitignore, so your private token will never be pushed to GitHub).
 
 4. **Launch the application**    

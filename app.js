@@ -16,8 +16,61 @@ const siteTitle = document.querySelector('h1');
 let isViewingFavorites = false; // Permet de savoir si l'utilisateur regarde ses favoris
 let currentShowsRaw = []; // Stocke les séries brutes pour pouvoir les filtrer
 
+// CONFIGURATION TMDB : JETON BEARER DE TMDB (coller votre jeton TMB ici ) :
+const TMDB_TOKEN = typeof MY_SECRET_TOKEN !== 'undefined' ? MY_SECRET_TOKEN : "";
+
 // Initialisation des favoris depuis le localStorage (ou tableau vide s'il n'y a rien)
 let favorites = JSON.parse(localStorage.getItem('findseries_favorites')) || [];
+
+// --- FONCTION COMPLÉMENTAIRE : Récupérer les plateformes de streaming depuis TMDB ---
+async function fetchStreamingProviders(seriesName) {
+
+    // SÉCURITÉ : Si aucun token n'est configuré, on annule proprement la recherche
+    if (!TMDB_TOKEN) {
+        console.warn("Recherche de plateformes impossible : Aucun jeton TMDB configuré.");
+        return null; }
+
+    try {
+        // Étape A : Recherche de la série sur TMDB pour obtenir son ID
+        const searchUrl = `https://api.themoviedb.org/3/search/tv?query=${encodeURIComponent(seriesName)}&language=fr-FR`;
+        const searchResponse = await fetch(searchUrl, {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${TMDB_TOKEN}`
+            }
+        });
+        
+        if (!searchResponse.ok) return null;
+        const searchData = await searchResponse.json();
+
+        if (!searchData.results || searchData.results.length === 0) {
+            return null; 
+        }
+
+        const tmdbId = searchData.results[0].id; 
+
+        // Étape B : Récupérer les fournisseurs à partir de l'ID TMDB
+        const providersUrl = `https://api.themoviedb.org/3/tv/${tmdbId}/watch/providers`;
+        const providersResponse = await fetch(providersUrl, {
+            method: 'GET',
+            headers: {
+                accept: 'application/json',
+                Authorization: `Bearer ${TMDB_TOKEN}`
+            }
+        });
+
+        if (!providersResponse.ok) return null;
+        const providersData = await providersResponse.json();
+
+        // Étape C : Retourner les plateformes d'abonnement (flatrate) disponibles en France (FR)
+        return providersData.results?.FR?.flatrate || null;
+
+    } catch (error) {
+        console.error("Erreur lors de la récupération des plateformes:", error);
+        return null;
+    }
+}
 
 // --- 1. FONCTION : Suggestions d'autocomplétion pendant la saisie ---
 searchInput.addEventListener('input', async () => {
@@ -79,7 +132,7 @@ async function fetchRandomShows() {
         showSkeletonLoader();
         statusMessage.textContent = "";
 
-        const response = await fetch(API_URL); // Nettoyé (un seul appel restant)
+        const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`Erreur HTTP ! Statut : ${response.status}`);
 
         const results = await response.json();
@@ -108,14 +161,14 @@ async function fetchRandomShows() {
 
 // --- 3. FONCTION : Rechercher des séries ---
 async function searchShows(query) {
-    isViewingFavorites = false; // L'utilisateur fait une recherche, il ne regarde plus ses favoris
-    resetGenreButtons();        // On remet le filtre des genres sur "Tous"
+    isViewingFavorites = false; 
+    resetGenreButtons();        
     const API_URL = `https://api.tvmaze.com/search/shows?q=${encodeURIComponent(query)}&embed=seasons`;
     try {
         showSkeletonLoader();
         statusMessage.textContent = "";
 
-        const response = await fetch(API_URL); // Nettoyé (un seul appel restant)
+        const response = await fetch(API_URL);
         if (!response.ok) throw new Error(`Erreur HTTP ! Statut : ${response.status}`);
 
         const results = await response.json();
@@ -211,12 +264,8 @@ async function displayShows(results) {
             displaySummary = `<span class="summary-text">${cleanSummary}</span>`;
         }
 
-        // --- Lien Où Regarder ---
-        const searchStreamingUrl = `https://www.google.com/search?q=ou+regarder+${encodeURIComponent(show.name)}+en+streaming`;
-
         const card = document.createElement('div');
         card.className = 'show-card fade-in-card';
-        // Sauvegarde des genres directement sur la carte HTML
         card.dataset.genres = show.genres ? show.genres.join(',') : '';
 
         card.style.border = "1px solid #334155"; 
@@ -227,15 +276,15 @@ async function displayShows(results) {
         card.style.boxShadow = "0 4px 6px rgba(0, 0, 0, 0.3)";
         card.style.transition = "transform 0.2s";
         card.style.position = "relative"; 
-        card.style.cursor = "pointer"; // Curseur main pour indiquer que la carte est cliquable
+        card.style.cursor = "pointer"; 
 
         card.addEventListener('mouseenter', () => card.style.transform = "scale(1.02)");
         card.addEventListener('mouseleave', () => card.style.transform = "scale(1)");
 
         // Événement au clic sur la carte pour ouvrir la modale détails
         card.addEventListener('click', (e) => {
-            // On bloque l'ouverture si le clic cible le bouton favoris ou le bouton "Voir plus"
-            if (e.target.closest('.btn-fav') || e.target.classList.contains('btn-see-more')) {
+            // On bloque l'ouverture si le clic cible le bouton favoris, le bouton "Voir plus", ou la section des plateformes
+            if (e.target.closest('.btn-fav') || e.target.classList.contains('btn-see-more') || e.target.closest('.btn-watch-providers') || e.target.closest('.platforms-container')) {
                 return;
             }
             openModal(show, cleanSummary, imageUrl, releaseYear, seasonsText);
@@ -259,11 +308,13 @@ async function displayShows(results) {
                 Note : ${show.rating && show.rating.average ? show.rating.average + '/10' : 'Non noté'}
             </p>
 
-            <a href="${searchStreamingUrl}" target="_blank" style="display: inline-block; margin-bottom: 15px; color: #fffcfb; text-decoration: none; font-size: 0.85rem; font-weight: bold;">
+            <button class="btn-watch-providers">
                 🔍 Où regarder ?
-            </a>
+            </button>
             
-            <div style="font-size: 0.85rem; line-height: 1.4; color: #cbd5e1;">
+            <div class="platforms-area" style="display: none;"></div>
+            
+            <div style="font-size: 0.85rem; line-height: 1.4; color: #cbd5e1; margin-top: 10px;">
                 ${displaySummary}
             </div>
         `;
@@ -272,6 +323,58 @@ async function displayShows(results) {
         favBtn.addEventListener('click', (e) => {
             e.stopPropagation(); 
             toggleFavorite(show, favBtn);
+        });
+
+        // --- Logique du clic sur le nouveau bouton "Où regarder ?" ---
+        const watchBtn = card.querySelector('.btn-watch-providers');
+        const platformsArea = card.querySelector('.platforms-area');
+
+        watchBtn.addEventListener('click', async (e) => {
+            e.stopPropagation(); 
+
+            // Toggle d'affichage : si c'est déjà affiché, on cache et on s'arrête là
+            if (platformsArea.style.display === "block") {
+                platformsArea.style.display = "none";
+                watchBtn.style.backgroundColor = "transparent";
+                return;
+            }
+
+            // Affichage de la zone et état de chargement initial
+            platformsArea.style.display = "block";
+            platformsArea.innerHTML = `<div class="platforms-container"><span class="platform-status">Recherche des plateformes...</span></div>`;
+            watchBtn.style.backgroundColor = "#4338ca"; 
+
+            const providers = await fetchStreamingProviders(show.name);
+            platformsArea.innerHTML = ""; 
+
+            const container = document.createElement('div');
+            container.className = 'platforms-container';
+
+            if (providers && providers.length > 0) {
+                // On crée un conteneur avec un titre compact
+                const title = document.createElement('div');
+                title.className = 'platforms-title';
+                title.textContent = "Disponible en France sur :";
+                container.appendChild(title);
+
+                providers.forEach(platform => {
+                    const link = document.createElement('a');
+                    // Redirection globale vers JustWatch pré-remplie pour cette série
+                    link.href = `https://www.justwatch.com/fr/recherche?q=${encodeURIComponent(show.name)}`;
+                    link.target = "_blank";
+                    link.className = 'platform-item';
+
+                    link.innerHTML = `
+                        <img src="https://image.tmdb.org/t/p/original${platform.logo_path}" alt="${platform.provider_name}" class="platform-logo">
+                        <span>${platform.provider_name}</span>
+                    `;
+                    container.appendChild(link);
+                });
+            } else {
+                container.innerHTML = `<span class="platform-status">Non disponible en streaming par abonnement en France.</span>`;
+            }
+            
+            platformsArea.appendChild(container);
         });
 
         moviesContainer.appendChild(card);
@@ -325,7 +428,6 @@ btnShowFavorites.addEventListener('click', () => {
     const formattedFavs = favorites.map(show => ({ show: show }));
     displayShows(formattedFavs);
 
-    // On pousse l'état dans l'historique de navigation
     if (history.state !== 'favorites') {
         history.pushState('favorites', '', '#favoris');
     }
@@ -366,7 +468,6 @@ searchForm.addEventListener('submit', (event) => {
 // --- 8. FONCTION : Revenir à l'accueil lors du clic sur le titre ---
 siteTitle.addEventListener('click', () => {
     if (isViewingFavorites) {
-        // Déclenche l'action de retour arrière gérée par popstate
         history.back();
     } else {
         isViewingFavorites = false; 
@@ -494,7 +595,7 @@ function closeModal() {
     document.body.style.overflow = "auto"; 
 }
 
-// --- 13. ÉCOUTEUR GLOBAL : Bouton Retour du Navigateur---
+// --- 13 Bouton Retour du Navigateur---
 window.addEventListener('popstate', (event) => {
     if (isViewingFavorites) {
         isViewingFavorites = false; 

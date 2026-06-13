@@ -385,3 +385,74 @@ footer p a {
         max-width: 260px;
     }
 }
+
+
+  /* STYLES POUR LES PLATEFORMES DE STREAMING */
+
+.platforms-title {
+    font-size: 0.95rem;
+    font-weight: bold;
+    color: #cbd5e1;
+    margin-top: 15px;
+    margin-bottom: 8px;
+}
+
+.platforms-container {
+    background-color: #0f172a; 
+    border: 1px solid #334155;
+    border-radius: 10px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 8px;
+}
+
+.platform-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #f8fafc;
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.platform-item:hover {
+    background-color: #1e293b;
+    transform: translateX(3px); 
+}
+
+.platform-logo {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: cover;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.platform-status {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    font-style: italic;
+    padding: 5px;
+}
+
+.btn-watch-providers {
+    display: inline-block;
+    margin-bottom: 10px;
+    background-color: transparent;
+    border: none; 
+    color: #fffcfb;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Optionnel : un léger effet au survol pour que l'utilisateur sache qu'il peut cliquer */
+.btn-watch-providers:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
